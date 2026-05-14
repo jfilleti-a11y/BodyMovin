@@ -3,61 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottie External Loader</title>
+    <title>Lottie Previewer - Balance Teeter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
+        :root {
+            --bg-canvas: #f3f4f6;
+            --accent: #2563eb;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Main Wrapper */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
             display: flex;
             flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 1. Preview Area */
+        .preview-card {
+            background-color: var(--bg-canvas);
+            border-radius: 16px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         #lottie-container {
-            width: 80%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 450px; /* Initial size */
+            height: 450px;
+            transition: width 0.2s ease, height 0.2s ease;
         }
 
-        .controls {
-            margin-top: 20px;
+        /* 2. Controls Panel */
+        .controls-panel {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* UI Elements */
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
         }
 
         button {
-            padding: 10px 24px;
-            cursor: pointer;
+            flex: 1;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
-            background: #007aff;
+            border-radius: 8px;
+            background: var(--accent);
             color: white;
-            font-weight: 500;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active { transform: scale(0.98); }
+        button.secondary { background: #6b7280; }
+
+        @media (max-width: 480px) {
+            .preview-card { min-height: 250px; }
+            #lottie-container { width: 200px; height: 200px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="lottie-container"></div>
+    <div class="app-container">
+        <div class="preview-card" id="previewCard">
+            <div id="lottie-container"></div>
+        </div>
 
-    <div class="controls">
-        <button onclick="anim.play()">Play</button>
-        <button onclick="anim.pause()">Pause</button>
+        <div class="controls-panel">
+            <div class="control-group">
+                <label>Canvas Color</label>
+                <input type="color" id="colorPicker" value="#f3f4f6">
+            </div>
+
+            <div class="control-group">
+                <label>Anim Size: <span id="sizeLabel">450</span>px</label>
+                <input type="range" id="sizeSlider" min="100" max="600" value="450">
+            </div>
+
+            <div class="control-group">
+                <label>Playback</label>
+                <div class="button-row">
+                    <button onclick="anim.play()">Play</button>
+                    <button class="secondary" onclick="anim.pause()">Pause</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Load the animation
         const anim = lottie.loadAnimation({
             container: document.getElementById('lottie-container'),
             renderer: 'svg',
             loop: true,
             autoplay: true,
-            // CHANGE THIS TO YOUR FILENAME:
-            path: 'balance-teeter-subtle.json'
+            path: 'balance-teeter-subtle.json' // Updated filename
+        });
+
+        // DOM Elements
+        const previewCard = document.getElementById('previewCard');
+        const colorPicker = document.getElementById('colorPicker');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeLabel = document.getElementById('sizeLabel');
+        const container = document.getElementById('lottie-container');
+
+        // Update Background
+        colorPicker.addEventListener('input', (e) => {
+            previewCard.style.backgroundColor = e.target.value;
+        });
+
+        // Update Size
+        sizeSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            sizeLabel.textContent = val;
+            container.style.width = val + 'px';
+            container.style.height = val + 'px';
+
+            // Forces Lottie to recalculate the SVG viewport
+            anim.resize();
         });
     </script>
 </body>
